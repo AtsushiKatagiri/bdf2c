@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -44,6 +45,11 @@ int main()
 	char *token;
 	int i;
 	char *endptr;
+
+	if (isatty(fileno(stdin))) {
+		printf("Usage: bdf2c < font.bdf > font.c\n");
+		return 0;
+	}
 
 	while (fgets(buff, BUFFSIZE, stdin)) {
 		line++;
