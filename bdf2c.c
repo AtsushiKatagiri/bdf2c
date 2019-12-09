@@ -32,8 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define BUFFSIZE	512
 
-int main()
+int main(int argc, char *argv[])
 {
+	int array_dim = 2;
 	char buff[BUFFSIZE];
 	int comment = 1;
 	int header = 1;
@@ -45,10 +46,25 @@ int main()
 	char *token;
 	int i;
 	char *endptr;
+	int opt;
 
 	if (isatty(fileno(stdin))) {
 		printf("Usage: bdf2c < font.bdf > font.c\n");
 		return 0;
+	}
+
+	while ((opt = getopt(argc, argv, "d:")) != -1) {
+		switch (opt) {
+		case 'd':
+			array_dim = atoi(optarg);
+			if (array_dim < 1 || array_dim > 2) {
+				fprintf(stderr, "Invalid array dimension %d\n", array_dim);
+				return -1;
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	while (fgets(buff, BUFFSIZE, stdin)) {
@@ -95,13 +111,19 @@ int main()
 			}
 			fputs(buff, stdout);
 			if (!strncmp(buff, "BITMAP", 6)) {
-				printf("\t{\n");
+				if (array_dim != 1) {
+					printf("\t{\n");
+				}
 				bitmap_top = 1;
 				comment = 0;
 			}
 		} else {
 			if (!strncmp(buff, "ENDCHAR", 7)) {
-				printf("\t},\n\t// ");
+				if (array_dim == 1) {
+					printf("\t\t,\n\t// ");
+				} else {
+					printf("\t},\n\t// ");
+				}
 				comment = 1;
 				fputs(buff, stdout);
 			} else {
